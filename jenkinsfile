@@ -1,16 +1,26 @@
-//scripted
-node(""){
-def MHD = tool name: "maven3.9.2"
-stage('GitClone'){
-sh "echo this is git clone"
-git branch: 'master', credentialsId: 'git-hub', url: 'https://github.com/Thomasoluu/maven-web-apps.git'
-}
-stage('Build'){
-sh "echo start of build process"
-sh "${MHD}/bin/mvn package"
-}
-stage('DeploytoTomcat'){
-sh "echo Deploy to Tomcat server"
-deploy adapters: [tomcat9(credentialsId: 'tomcat-cred', path: '', url: 'http://52.207.252.230:5000/')], contextPath: null, war: 'target/*war'
-}
+pipeline {
+    agent any
+    tools {
+        maven "MAVEN3.9.2"
+        jdk "OracleJDK8"
+    }
+    
+    environment {
+        SNAP_REPO = 'vprofile-snapshot'
+		NEXUS_USER = 'admin'
+		NEXUS_PASS = 'admin123'
+		RELEASE_REPO = 'vprofile-release'
+		CENTRAL_REPO = 'vpro-maven-central'
+		NEXUSIP = '172.31.94.72'
+		NEXUSPORT = '8081'
+        NEXUS_LOGIN = 'nexuslogin'
+    }
+
+    stages {
+        stage('Build'){
+            steps {
+                sh 'mvn -s settings.xml -DskipTests install'
+            }
+        }
+    }
 }
